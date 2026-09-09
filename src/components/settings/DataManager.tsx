@@ -57,8 +57,9 @@ export function DataManager() {
 
   const canCopy = typeof navigator !== 'undefined' && Boolean(navigator.clipboard)
 
-  function announce(message: string) {
-    setStatus(message)
+  /** The toast already announces itself; this only narrates the wait. */
+  function done(message: string) {
+    setStatus('')
     toast(message)
   }
 
@@ -77,7 +78,7 @@ export function DataManager() {
       // Revoking in the same tick cancels the download in Safari; the file has
       // long since been handed off by the time this fires.
       setTimeout(() => URL.revokeObjectURL(url), 10_000)
-      if (alive.current) announce(`Backup saved — ${plural(footprint.days, 'day')}, ${plural(footprint.photos, 'photo')}`)
+      if (alive.current) done(`Backup saved — ${plural(footprint.days, 'day')}, ${plural(footprint.photos, 'photo')}`)
     } catch {
       if (alive.current) {
         setStatus('')
@@ -99,7 +100,7 @@ export function DataManager() {
         return
       }
       await navigator.clipboard.writeText(text)
-      if (alive.current) announce('Backup copied — paste it somewhere safe')
+      if (alive.current) done('Backup copied — paste it somewhere safe')
     } catch {
       if (alive.current) {
         setStatus('')
@@ -143,7 +144,7 @@ export function DataManager() {
       const { restored, missing } = await restorePhotos(incoming.state, incoming.photos)
       dispatch({ type: 'replaceState', state: incoming.state })
       const tail = missing > 0 ? ` — ${plural(missing, 'photo')} were not in the file` : ''
-      if (alive.current) announce(`Restored ${plural(countDays(incoming.state), 'day')} and ${plural(restored, 'photo')}${tail}`)
+      if (alive.current) done(`Restored ${plural(countDays(incoming.state), 'day')} and ${plural(restored, 'photo')}${tail}`)
     } catch {
       if (alive.current) {
         setStatus('')
@@ -156,6 +157,7 @@ export function DataManager() {
 
   const incomingDays = pending ? countDays(pending.state) : 0
   const incomingPhotos = pending ? photoIdsIn(pending.state).filter((id) => pending.photos[id]).length : 0
+  const exportedLabel = exportedOn(pending?.exportedAt ?? null)
 
   return (
     <Card title="Your data">
@@ -210,7 +212,6 @@ export function DataManager() {
 
       <input
         ref={fileInput}
-        id={`${uid}-restore`}
         className="dm-file"
         type="file"
         accept="application/json,.json"
@@ -232,21 +233,20 @@ export function DataManager() {
         </p>
         <ul className="dm-confirm__list">
           <li>
-            <strong>Goes:</strong> your current attempt ({plural(Object.keys(state.current.days).length, 'day')} logged),
-            all {plural(state.history.length, 'archived attempt')} and your rules.
+            <strong>Goes:</strong> your current attempt ({plural(Object.keys(state.current.days).length, 'day')}{' '}
+            logged){state.history.length > 0 ? `, ${plural(state.history.length, 'archived attempt')}` : ''} and your
+            rules.
           </li>
           <li>
             <strong>Arrives:</strong> {plural(incomingDays, 'day')} and {plural(incomingPhotos, 'photo')} from the file.
           </li>
           <li>
-            <strong>Stays:</strong> photos already on this device keep their files, so anything the backup does not carry
-            may still turn up.
+            <strong>Stays:</strong> photo files already on this device are left alone, so a day the backup could not
+            carry may still find its picture.
           </li>
         </ul>
         <p className="dm-confirm__meta">
-          {exportedOn(pending?.exportedAt ?? null)
-            ? `Backed up ${exportedOn(pending?.exportedAt ?? null)}`
-            : 'This file does not say when it was made.'}
+          {exportedLabel ? `Backed up ${exportedLabel}` : 'This file does not say when it was made.'}
         </p>
         <div className="modal__actions">
           <Button onClick={() => setPending(null)}>Keep what I have</Button>

@@ -1,0 +1,364 @@
+/*
+ * App shell: sticky header with the date navigator, the notice strips that sit
+ * under it, and the fixed bottom tab bar. Everything is prefixed `sh-`.
+ */
+
+.sh-app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* --- Header -------------------------------------------------------------- */
+
+.sh-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border);
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.sh-header__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: var(--content-max);
+  min-height: var(--header-height);
+  margin: 0 auto;
+  padding: var(--space-2) var(--space-3);
+}
+
+.sh-brand {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sh-brand__name {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sh-brand__day {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.sh-brand__num {
+  color: var(--accent);
+}
+
+/* --- Date navigator ------------------------------------------------------ */
+
+.sh-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.sh-nav__btn {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.sh-nav__btn:hover:not(:disabled) {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.sh-nav__btn:active:not(:disabled) {
+  background: var(--bg-sunken);
+}
+
+.sh-nav__btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.sh-nav__label {
+  min-width: 68px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.sh-nav__today {
+  min-height: 44px;
+  padding: 0 12px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.sh-nav__today:hover {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+/* Reclaim room on the narrowest phones before anything has to truncate. */
+@media (max-width: 370px) {
+  .sh-header__inner {
+    gap: var(--space-2);
+    padding-inline: var(--space-2);
+  }
+
+  .sh-nav__label {
+    min-width: 56px;
+    font-size: 12px;
+  }
+
+  .sh-nav__today {
+    padding: 0 10px;
+  }
+}
+
+/* --- Notice strips ------------------------------------------------------- */
+
+.sh-strip {
+  background: var(--warning-soft);
+  border-bottom: 1px solid var(--border);
+}
+
+.sh-strip__inner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 10px var(--space-4);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.sh-strip__icon {
+  flex-shrink: 0;
+  color: var(--warning);
+  font-size: 15px;
+  line-height: 1.3;
+}
+
+.sh-strip__lead {
+  font-weight: 700;
+}
+
+/*
+ * The restart banner renders nothing most days, so the padding is attached to
+ * `:not(:empty)` — otherwise a blank 16px gap would sit under the header.
+ */
+.sh-banners {
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+}
+
+.sh-banners:not(:empty) {
+  padding: var(--space-4) var(--space-4) 0;
+}
+
+/* --- Content ------------------------------------------------------------- */
+
+.sh-main {
+  flex: 1;
+  padding-bottom: calc(var(--tabbar-height) + env(safe-area-inset-bottom, 0px));
+}
+
+/* For views that ship without a page frame of their own. */
+.sh-page {
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-4) var(--space-6);
+}
+
+/* --- Tab bar ------------------------------------------------------------- */
+
+.sh-tabbar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 30;
+  background: var(--bg-elevated);
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.sh-tabbar__inner {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  width: 100%;
+  max-width: var(--content-max);
+  height: var(--tabbar-height);
+  margin: 0 auto;
+}
+
+.sh-tab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 44px;
+  padding: 4px 2px;
+  border: none;
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: color 0.15s ease;
+}
+
+.sh-tab::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 28px;
+  height: 2px;
+  border-radius: 0 0 var(--radius-full) var(--radius-full);
+  background: transparent;
+  transition: background-color 0.15s ease;
+}
+
+.sh-tab[aria-current='page'] {
+  color: var(--accent);
+}
+
+.sh-tab[aria-current='page']::before {
+  background: var(--accent);
+}
+
+.sh-tab:active {
+  background: var(--surface-hover);
+}
+
+.sh-tab__icon {
+  display: block;
+}
+
+/* --- Crash screen -------------------------------------------------------- */
+
+.sh-crash {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: var(--space-5) var(--space-4);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.sh-crash__panel {
+  width: 100%;
+  max-width: 420px;
+  padding: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+.sh-crash__icon {
+  font-size: 30px;
+  line-height: 1;
+  margin-bottom: var(--space-3);
+}
+
+.sh-crash__title {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: var(--space-2);
+}
+
+.sh-crash__body {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.sh-crash__detail {
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--bg-sunken);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.sh-crash__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+}
+
+.sh-crash__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 48px;
+  padding: 10px 16px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.sh-crash__btn--primary {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.sh-crash__btn--secondary {
+  background: var(--surface);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.sh-crash__btn--secondary:hover {
+  background: var(--surface-hover);
+}
+
+.sh-crash__note {
+  margin-top: var(--space-3);
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+}

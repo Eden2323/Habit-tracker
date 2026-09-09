@@ -1,10 +1,12 @@
 /* The restart prompt: the only thing in the app that sits above every screen. */
 
+/* The app shell frames this slot; the wrapper only exists so the banner and its
+   confirmation modal have one root, and so the slot is empty when there is
+   nothing to say. */
 .rb-wrap {
   width: 100%;
   max-width: var(--content-max);
   margin: 0 auto;
-  padding: var(--space-3) var(--space-4) 0;
 }
 
 .rb-banner {
