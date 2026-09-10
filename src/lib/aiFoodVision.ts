@@ -291,41 +291,80 @@ Ensure calories roughly match the Atwater equation (4*protein + 4*carbs + 9*fat)
     },
   }
 
-  // Use gemini-2.5-flash as the primary vision model
-  const models = ['gemini-2.5-flash', 'gemini-1.5-flash']
+  const candidateModels = ['gemini-2.0-flash', 'gemini-2.0-flash-lite']
   let lastError: Error | null = null
 
-  for (const model of models) {
+  // 1. Try primary models first
+  for (const model of candidateModels) {
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        const msg = (errorData as { error?: { message?: string } })?.error?.message ?? `HTTP ${response.status}`
-        throw new Error(`Gemini API error (${model}): ${msg}`)
-      }
-
-      const json = await response.json()
-      const textContent = json?.candidates?.[0]?.content?.parts?.[0]?.text
-      if (!textContent) {
-        throw new Error('No content returned from Gemini model.')
-      }
-
-      const parsed = JSON.parse(textContent)
-      return normalizeAnalysisResult(parsed)
+      return await callGeminiModel(model, requestBody, apiKey)
     } catch (err) {
       lastError = err instanceof Error ? err : new Error(String(err))
-      // Try fallback model if first fails
-      continue
+      // If error is an invalid API key, fail fast without checking further models
+      if (lastError.message.includes('API_KEY_INVALID') || lastError.message.includes('permission')) {
+        throw lastError
+      }
+    }
+  }
+
+  // 2. If candidates returned 404, query ModelService to discover models available to this API key
+  const discovered = await findActiveModels(apiKey)
+  for (const model of discovered) {
+    if (candidateModels.includes(model)) continue
+    try {
+      return await callGeminiModel(model, requestBody, apiKey)
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err))
     }
   }
 
   throw lastError ?? new Error('Could not analyze meal photo with Gemini API.')
+}
+
+async function callGeminiModel(model: string, requestBody: unknown, apiKey: string): Promise<MealAnalysisResult> {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(requestBody),
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    const msg = (errorData as { error?: { message?: string } })?.error?.message ?? `HTTP ${response.status}`
+    throw new Error(`Gemini API error (${model}): ${msg}`)
+  }
+
+  const json = await response.json()
+  const textContent = json?.candidates?.[0]?.content?.parts?.[0]?.text
+  if (!textContent) {
+    throw new Error('No content returned from Gemini model.')
+  }
+
+  const parsed = JSON.parse(textContent)
+  return normalizeAnalysisResult(parsed)
+}
+
+/** Query the API to discover active models supporting generateContent for this key. */
+async function findActiveModels(apiKey: string): Promise<string[]> {
+  try {
+    const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`
+    const res = await fetch(listUrl)
+    if (!res.ok) return []
+    const data = (await res.json()) as { models?: Array<{ name?: string; supportedGenerationMethods?: string[] }> }
+    const valid = (data.models ?? [])
+      .filter((m) => m.supportedGenerationMethods?.includes('generateContent') && typeof m.name === 'string')
+      .map((m) => (m.name as string).replace(/^models\//, ''))
+
+    // Prioritize flash models
+    return valid.sort((a, b) => {
+      const aScore = (a === 'gemini-2.0-flash' ? 10 : 0) + (a.includes('flash') ? 5 : 0)
+      const bScore = (b === 'gemini-2.0-flash' ? 10 : 0) + (b.includes('flash') ? 5 : 0)
+      return bScore - aScore
+    })
+  } catch {
+    return []
+  }
 }
 
 interface RawIngredient {
