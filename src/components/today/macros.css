@@ -1,0 +1,375 @@
+/*
+ * Macro tracker. Renders inside the day view's sunken panel, so its blocks sit
+ * on --surface to lift off that background. Each row carries its own macro
+ * colour as --mc-tint.
+ */
+
+.mc {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* --- Split ring ---------------------------------------------------------- */
+
+.mc-summary {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+}
+
+.mc-ring {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
+}
+
+.mc-ring__svg {
+  display: block;
+  transform: rotate(-90deg);
+}
+
+.mc-ring__track {
+  stroke: var(--bg-sunken);
+}
+
+.mc-ring__arc {
+  transition: stroke-dasharray 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    stroke-dashoffset 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mc-ring__label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.1;
+}
+
+.mc-ring__value {
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.mc-ring__unit {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-faint);
+}
+
+.mc-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.mc-legend__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 14px;
+}
+
+.mc-legend__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.mc-legend__name {
+  color: var(--text-muted);
+}
+
+.mc-legend__pct {
+  margin-left: auto;
+  font-weight: 700;
+}
+
+.mc-caption {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+/* --- Macro rows ---------------------------------------------------------- */
+
+.mc-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.mc-row {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+}
+
+.mc-row__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+}
+
+.mc-row__label {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.mc-input {
+  display: flex;
+  align-items: stretch;
+  margin-left: auto;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.15s ease;
+}
+
+.mc-input:focus-within {
+  border-color: var(--accent);
+}
+
+.mc-step {
+  width: 44px;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  border-radius: var(--radius-sm);
+}
+
+.mc-step:hover:not(:disabled) {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.mc-step:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.mc-input__field {
+  width: 72px;
+  border: none;
+  background: transparent;
+  padding: 0 2px;
+  text-align: center;
+  font-size: 16px; /* 16px stops iOS Safari zooming on focus */
+  font-weight: 600;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+/* The steppers do this job with a 44px target; the native spinners do not. */
+.mc-input__field::-webkit-outer-spin-button,
+.mc-input__field::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.mc-input__unit {
+  display: flex;
+  align-items: center;
+  padding-right: var(--space-2);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-faint);
+}
+
+.mc-bar {
+  display: flex;
+  height: 8px;
+  margin-top: var(--space-3);
+  background: var(--bg-sunken);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.mc-bar__fill {
+  background: var(--mc-tint);
+  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mc-bar__over {
+  background: var(--warning);
+  box-shadow: inset 2px 0 0 var(--surface);
+  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mc-row__foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--text-faint);
+}
+
+.mc-row__delta {
+  font-weight: 600;
+}
+
+.mc-row__delta--met {
+  color: var(--success);
+}
+
+.mc-row__delta--over {
+  color: var(--warning);
+}
+
+/* --- Calories from macros ------------------------------------------------ */
+
+.mc-suggest {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 52px;
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
+  text-align: left;
+  background: var(--accent-soft);
+  border: 1px dashed var(--accent);
+  border-radius: var(--radius-sm);
+  transition: transform 0.08s ease;
+}
+
+.mc-suggest:active {
+  transform: scale(0.99);
+}
+
+.mc-suggest__text {
+  font-size: 12px;
+  color: var(--text-muted);
+  min-width: 0;
+}
+
+.mc-suggest__value {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.mc-suggest__cta {
+  flex-shrink: 0;
+  background: var(--accent);
+  color: var(--accent-text);
+  border-radius: var(--radius-full);
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* --- Logged toggle ------------------------------------------------------- */
+
+.mc-log {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 64px;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: var(--space-3) var(--space-4);
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.08s ease;
+}
+
+.mc-log:active {
+  transform: scale(0.99);
+}
+
+.mc-log[aria-pressed='true'] {
+  background: var(--success-soft);
+  border-color: var(--success);
+}
+
+.mc-log__icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.mc-log__text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mc-log__title {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.mc-log[aria-pressed='true'] .mc-log__title {
+  color: var(--success);
+}
+
+.mc-log__hint {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.mc-log__switch {
+  position: relative;
+  width: 48px;
+  height: 28px;
+  flex-shrink: 0;
+  background: var(--border-strong);
+  border-radius: var(--radius-full);
+  transition: background-color 0.2s ease;
+}
+
+.mc-log[aria-pressed='true'] .mc-log__switch {
+  background: var(--success);
+}
+
+.mc-log__thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mc-log[aria-pressed='true'] .mc-log__thumb {
+  transform: translateX(20px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mc-log:active,
+  .mc-suggest:active {
+    transform: none;
+  }
+}

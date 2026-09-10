@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#121211" />
+    <title>Offline · 75 Hard Tracker</title>
+    <!--
+      Served by the service worker when a navigation fails and no cached shell
+      is available. It has to stand alone: no build assets, no fonts, no icon
+      files — nothing that could itself be missing. The tokens below mirror
+      src/styles/global.css so the page still looks like the app.
+    -->
+    <style>
+      :root {
+        --bg: #121211;
+        --surface: #1c1c1a;
+        --border: #302f2c;
+        --text: #f2f0ec;
+        --text-muted: #a3a09a;
+        --accent: #f4703f;
+        --accent-hover: #ff8354;
+        --accent-text: #17120f;
+        --radius: 14px;
+        --radius-lg: 20px;
+        color-scheme: dark;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        font-size: 16px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      main {
+        width: 100%;
+        max-width: 360px;
+        text-align: center;
+      }
+
+      .mark {
+        display: block;
+        width: 88px;
+        height: 88px;
+        margin: 0 auto 24px;
+      }
+
+      h1 {
+        margin: 0 0 12px;
+        font-size: 22px;
+        line-height: 1.25;
+        letter-spacing: -0.015em;
+      }
+
+      p {
+        margin: 0;
+        color: var(--text-muted);
+      }
+
+      .note {
+        margin-top: 24px;
+        padding: 16px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        background: var(--surface);
+        font-size: 15px;
+      }
+
+      button {
+        margin-top: 24px;
+        width: 100%;
+        min-height: 48px;
+        padding: 12px 20px;
+        border: 0;
+        border-radius: var(--radius);
+        background: var(--accent);
+        color: var(--accent-text);
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: var(--accent-hover);
+      }
+
+      button:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <svg class="mark" viewBox="0 0 512 512" role="img" aria-label="75 Hard Tracker">
+        <circle cx="256" cy="256" r="178" fill="none" stroke="var(--border)" stroke-width="30" />
+        <circle
+          cx="256"
+          cy="256"
+          r="178"
+          fill="none"
+          stroke="var(--accent)"
+          stroke-width="30"
+          stroke-linecap="round"
+          stroke-dasharray="838.8 1118.4"
+          transform="rotate(-90 256 256)"
+        />
+        <g
+          fill="none"
+          stroke="var(--text)"
+          stroke-width="26"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          transform="translate(256 256) scale(0.9) translate(-116 -78)"
+        >
+          <path d="M6 8H90L44 148" />
+          <path
+            d="M226 8H146L142 66C166 54 226 58 226 102C226 130 200 148 172 148C157 148 146 143 138 134"
+          />
+        </g>
+      </svg>
+
+      <h1>You're offline</h1>
+      <p>The tracker couldn't be reached right now.</p>
+
+      <p class="note">
+        Nothing is lost. Every day you've logged is saved on this device, and it will still be here
+        the moment you're back online.
+      </p>
+
+      <button type="button" onclick="location.reload()">Try again</button>
+    </main>
+  </body>
+</html>

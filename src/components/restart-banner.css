@@ -1,0 +1,114 @@
+/* The restart prompt: the only thing in the app that sits above every screen. */
+
+/* The app shell frames this slot; the wrapper only exists so the banner and its
+   confirmation modal have one root, and so the slot is empty when there is
+   nothing to say. */
+.rb-wrap {
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+}
+
+.rb-banner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius);
+  background: var(--danger-soft);
+  animation: rb-in 0.22s ease;
+}
+
+.rb-banner--done {
+  border-color: var(--success);
+  background: var(--success-soft);
+}
+
+.rb-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--danger);
+}
+
+.rb-banner--done .rb-title {
+  color: var(--success);
+}
+
+.rb-body {
+  font-size: 14px;
+  color: var(--text);
+}
+
+/* Missed task names, so the banner says what actually went wrong. */
+.rb-tag {
+  display: inline-block;
+  margin: 4px 6px 0 0;
+  padding: 2px 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.rb-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* Both actions share the row until the words stop fitting, then they stack. */
+.rb-actions .btn {
+  flex: 1 1 150px;
+}
+
+.rb-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: 3px 4px 3px var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: var(--bg-sunken);
+}
+
+.rb-chip__text {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* Ghost buttons are 36px tall; the chip is still a one-handed tap target. */
+.rb-chip__action {
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: var(--radius-full);
+  color: var(--text);
+}
+
+.rb-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.rb-confirm strong {
+  color: var(--text);
+}
+
+@keyframes rb-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

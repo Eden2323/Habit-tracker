@@ -1,0 +1,429 @@
+/*
+ * Water and workout trackers. Both share a readout, a progress idiom and a
+ * set of tap targets; only --tk-accent differs, so the shared pieces are
+ * written once and tinted per tracker.
+ */
+
+.tk {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.tk-water {
+  --tk-accent: var(--task-water);
+}
+
+.tk-workout {
+  --tk-accent: var(--task-workout);
+}
+
+.tk-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+/* Readout ------------------------------------------------------------- */
+
+.tk-readout {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.tk-readout__value {
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--text);
+}
+
+.tk-readout__unit {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--tk-accent);
+  margin-left: -4px;
+}
+
+.tk-readout__rest {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.tk-pill {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  color: var(--text);
+  background: color-mix(in srgb, var(--tk-accent) 18%, transparent);
+}
+
+/* Glasses ------------------------------------------------------------- */
+
+.tk-glasses {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(46px, 1fr));
+  gap: var(--space-2);
+}
+
+.tk-glass {
+  display: grid;
+  place-items: center;
+  min-height: 52px;
+  padding: 4px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.08s ease;
+}
+
+.tk-glass:active {
+  transform: scale(0.94);
+}
+
+.tk-glass[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--tk-accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--tk-accent) 32%, transparent);
+}
+
+.tk-glass__icon {
+  width: 28px;
+  height: 36px;
+}
+
+.tk-glass__outline {
+  fill: none;
+  stroke: var(--border-strong);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+
+.tk-glass[aria-pressed='true'] .tk-glass__outline {
+  stroke: var(--tk-accent);
+}
+
+.tk-glass__liquid {
+  fill: var(--tk-accent);
+  transform-box: fill-box;
+  transform-origin: bottom;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Steppers and custom amount ------------------------------------------ */
+
+.tk-steppers {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.tk-step {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 52px;
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+  transition: background-color 0.15s ease, transform 0.08s ease, opacity 0.15s ease;
+}
+
+.tk-step:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.tk-step:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.tk-step:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.tk-step__glyph {
+  font-size: 22px;
+  line-height: 1;
+  color: var(--tk-accent);
+}
+
+.tk-custom__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.tk-custom__input {
+  flex: 1;
+  min-width: 0;
+}
+
+.tk-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: calc(var(--space-2) * -1);
+}
+
+/* Progress bar -------------------------------------------------------- */
+
+/* Tracks sit on the sunken panel DayView expands them in, so they are drawn
+   as an inset surface rather than another sunken layer. */
+.tk-bar {
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--border);
+  overflow: hidden;
+}
+
+.tk-bar__fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--tk-accent);
+  transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Minutes slider ------------------------------------------------------ */
+
+.tk-range-wrap {
+  --tk-thumb: 26px;
+  position: relative;
+}
+
+.tk-range {
+  position: relative;
+  z-index: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 44px; /* the input itself is the 44px tap target */
+  margin: 0;
+  background: transparent;
+}
+
+.tk-range:focus {
+  outline: none;
+}
+
+/* Track fill is drawn with the thumb's own inset so the paint lines up with it. */
+.tk-range::-webkit-slider-runnable-track {
+  height: 10px;
+  border-radius: var(--radius-full);
+  box-shadow: inset 0 0 0 1px var(--border);
+  background: linear-gradient(
+    to right,
+    var(--tk-accent) 0 calc(var(--tk-fill, 0) * (100% - var(--tk-thumb)) + var(--tk-thumb) / 2),
+    var(--surface) 0
+  );
+}
+
+.tk-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: var(--tk-thumb);
+  height: var(--tk-thumb);
+  margin-top: calc((10px - var(--tk-thumb)) / 2);
+  border-radius: 50%;
+  background: var(--surface);
+  border: 3px solid var(--tk-accent);
+  box-shadow: var(--shadow-sm);
+}
+
+.tk-range::-moz-range-track {
+  height: 10px;
+  border-radius: var(--radius-full);
+  box-shadow: inset 0 0 0 1px var(--border);
+  background: var(--surface);
+}
+
+.tk-range::-moz-range-progress {
+  height: 10px;
+  border-radius: var(--radius-full);
+  background: var(--tk-accent);
+}
+
+.tk-range::-moz-range-thumb {
+  width: var(--tk-thumb);
+  height: var(--tk-thumb);
+  border-radius: 50%;
+  background: var(--surface);
+  border: 3px solid var(--tk-accent);
+  box-shadow: var(--shadow-sm);
+}
+
+.tk-range:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.tk-range:focus-visible::-moz-range-thumb {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.tk-range__tick {
+  position: absolute;
+  top: 13px;
+  left: calc(var(--tk-target, 0) * (100% - var(--tk-thumb)) + var(--tk-thumb) / 2);
+  width: 2px;
+  height: 18px;
+  transform: translateX(-50%);
+  border-radius: var(--radius-full);
+  background: var(--border-strong);
+}
+
+.tk-scale {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--text-faint);
+}
+
+/* Sits in the scale row, but pinned to the goal tick above it. */
+.tk-range__goal {
+  position: absolute;
+  top: 44px;
+  left: calc(var(--tk-target, 0) * (100% - var(--tk-thumb)) + var(--tk-thumb) / 2);
+  transform: translateX(-50%);
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Quick-set chips ----------------------------------------------------- */
+
+.tk-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.tk-chip {
+  flex: 1 1 56px;
+  min-height: 44px;
+  min-width: 56px;
+  padding: 8px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  color: var(--text-muted);
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tk-chip:hover {
+  background: var(--surface-hover);
+}
+
+.tk-chip[aria-pressed='true'] {
+  color: var(--text);
+  font-weight: 700;
+  background: color-mix(in srgb, var(--tk-accent) 14%, var(--surface));
+  border-color: transparent;
+  box-shadow: inset 0 0 0 2px var(--tk-accent);
+}
+
+/* Text fields --------------------------------------------------------- */
+
+.tk-fields {
+  display: grid;
+  grid-template-columns: 104px 1fr;
+  gap: var(--space-3);
+  align-items: start;
+}
+
+/* Outdoors switch ----------------------------------------------------- */
+
+.tk-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  position: relative;
+  min-height: 52px;
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.tk-switch__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  margin: 0;
+}
+
+.tk-switch__text {
+  display: flex;
+  flex-direction: column;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.tk-switch__hint {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-faint);
+}
+
+.tk-switch__track {
+  flex-shrink: 0;
+  width: 52px;
+  height: 32px;
+  padding: 3px;
+  border-radius: var(--radius-full);
+  background: var(--border-strong);
+  transition: background-color 0.18s ease;
+}
+
+.tk-switch__thumb {
+  display: block;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tk-switch__input:checked ~ .tk-switch__track {
+  background: var(--tk-accent);
+}
+
+.tk-switch__input:checked ~ .tk-switch__track .tk-switch__thumb {
+  transform: translateX(20px);
+}
+
+.tk-switch__input:focus-visible ~ .tk-switch__track {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tk-glass__liquid,
+  .tk-bar__fill,
+  .tk-switch__thumb {
+    transition: none;
+  }
+}
