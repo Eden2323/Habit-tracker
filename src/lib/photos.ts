@@ -129,9 +129,18 @@ export async function compressImage(file: Blob, maxEdge = MAX_PHOTO_EDGE): Promi
   }
 }
 
-/** Compress and store a picked file; returns the id to save on the day record. */
-export async function savePhotoForDay(dateKey: string, file: Blob): Promise<string> {
-  const id = `photo_${dateKey}`
+/**
+ * Compress and store a picked file; returns the id to save on the day record.
+ *
+ * The id carries the attempt as well as the date. Keying on the date alone
+ * would make two attempts share one blob: restarting on a day you had already
+ * photographed — including the ordinary "finish day 75 and start again" flow —
+ * would overwrite the archived attempt's picture for that date. Ids written by
+ * older versions are plain `photo_<date>` and still resolve, because a day
+ * record is always read back by the id it stored.
+ */
+export async function savePhotoForDay(attemptId: string, dateKey: string, file: Blob): Promise<string> {
+  const id = `photo_${attemptId}_${dateKey}`
   const compressed = await compressImage(file)
   await putPhoto(id, compressed)
   return id

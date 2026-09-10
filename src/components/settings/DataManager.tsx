@@ -1,6 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState, type ChangeEvent } from 'react'
 import { buildBackup, countDays, exportBackup, parseBackup, photoIdsIn, restorePhotos, type ParsedBackup } from '../../lib/backup'
 import { formatLong, isValidDateKey, toDateKey } from '../../lib/date'
+import { pruneOrphans } from '../../lib/photos'
 import { useStore } from '../../lib/store'
 import { Button, Card, Modal, useToast } from '../ui'
 import './data.css'
@@ -141,9 +142,15 @@ export function DataManager() {
     setBusy('restore')
     setStatus('Restoring…')
     try {
-      const { restored, missing } = await restorePhotos(incoming.state, incoming.photos)
+      const { restored, absentFromFile, writeFailed } = await restorePhotos(incoming.state, incoming.photos)
       dispatch({ type: 'replaceState', state: incoming.state })
-      const tail = missing > 0 ? ` — ${plural(missing, 'photo')} were not in the file` : ''
+      // Blobs the discarded state referenced are unreachable now; left alone
+      // they would sit in IndexedDB forever and eat the quota this app needs.
+      void pruneOrphans(photoIdsIn(incoming.state)).catch(() => {})
+      const notes: string[] = []
+      if (absentFromFile > 0) notes.push(`${plural(absentFromFile, 'photo')} were not in the file`)
+      if (writeFailed > 0) notes.push(`${plural(writeFailed, 'photo')} could not be saved — this device is out of space`)
+      const tail = notes.length > 0 ? ` — ${notes.join(', and ')}` : ''
       if (alive.current) done(`Restored ${plural(countDays(incoming.state), 'day')} and ${plural(restored, 'photo')}${tail}`)
     } catch {
       if (alive.current) {
@@ -241,8 +248,8 @@ export function DataManager() {
             <strong>Arrives:</strong> {plural(incomingDays, 'day')} and {plural(incomingPhotos, 'photo')} from the file.
           </li>
           <li>
-            <strong>Stays:</strong> photo files already on this device are left alone, so a day the backup could not
-            carry may still find its picture.
+            <strong>Replaced:</strong> where the backup carries a photo for a day, it overwrites the copy on this
+            device. Photos the file does not carry are left where they are.
           </li>
         </ul>
         <p className="dm-confirm__meta">

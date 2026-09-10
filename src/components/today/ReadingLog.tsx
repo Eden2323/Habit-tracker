@@ -4,6 +4,7 @@ import { useStore } from '../../lib/store'
 import type { DateKey, DayRecord, TaskDef } from '../../lib/types'
 import { Button, Field } from '../ui'
 import './reading.css'
+import { useFlushOnHide } from '../../lib/useFlushOnHide'
 
 const DEFAULT_TARGET = 10
 const MAX_PAGES = 2000
@@ -44,6 +45,7 @@ function useDeferredWrite(delay: number, scope: string) {
   // Each queued write captured its own date, so flushing on a day change lands
   // it on the day it was typed into rather than losing it to the next edit.
   useEffect(() => flush, [flush, scope])
+  useFlushOnHide(flush)
 
   return { queue, flush }
 }

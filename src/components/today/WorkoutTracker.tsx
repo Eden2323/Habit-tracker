@@ -4,6 +4,7 @@ import { useStore } from '../../lib/store'
 import type { DateKey, TaskDef } from '../../lib/types'
 import { Field } from '../ui'
 import './trackers.css'
+import { useFlushOnHide } from '../../lib/useFlushOnHide'
 
 const DEFAULT_TARGET = 45
 const QUICK_MINUTES = [30, 45, 60, 75, 90]
@@ -45,6 +46,7 @@ function useDeferredCommits(delay: number) {
   // Closing the day mid-edit must not lose it; each pending write captured its
   // own date, so it still lands on the day it was typed into.
   useEffect(() => flush, [flush])
+  useFlushOnHide(flush)
 
   return { defer, flush }
 }

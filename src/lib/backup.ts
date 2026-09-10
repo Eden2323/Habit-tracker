@@ -132,17 +132,34 @@ export async function parseBackup(file: File): Promise<ParsedBackup> {
   }
 }
 
-/** Write the file's photos back into IndexedDB, keyed by their original ids. */
+export interface PhotoRestoreResult {
+  restored: number
+  /** Referenced by the state but not carried in the file. */
+  absentFromFile: number
+  /** Present in the file but rejected by this device — usually no space left. */
+  writeFailed: number
+}
+
+/**
+ * Write the file's photos back into IndexedDB, keyed by their original ids.
+ *
+ * The two ways a photo can fail to land are counted separately: they mean very
+ * different things to the user. "Not in the backup" says the file is thin;
+ * "could not be saved" says this device is out of room, and the backup is still
+ * good. Reporting the second as the first would talk someone into deleting a
+ * backup that was never at fault.
+ */
 export async function restorePhotos(
   state: AppState,
   photos: Record<string, string>,
-): Promise<{ restored: number; missing: number }> {
+): Promise<PhotoRestoreResult> {
   let restored = 0
-  let missing = 0
+  let absentFromFile = 0
+  let writeFailed = 0
   for (const id of photoIdsIn(state)) {
     const dataUrl = photos[id]
     if (!dataUrl) {
-      missing += 1
+      absentFromFile += 1
       continue
     }
     try {
@@ -151,17 +168,22 @@ export async function restorePhotos(
     } catch {
       // A photo that will not decode or store leaves the day picture-less,
       // which is a far smaller loss than abandoning the whole restore.
-      missing += 1
+      writeFailed += 1
     }
   }
-  return { restored, missing }
+  return { restored, absentFromFile, writeFailed }
 }
 
 /** Parse, write the photos back, and report what landed. */
 export async function restoreBackup(file: File): Promise<RestoreResult> {
   const parsed = await parseBackup(file)
-  const { restored, missing } = await restorePhotos(parsed.state, parsed.photos)
-  return { ...parsed, photosRestored: restored, photosMissing: missing, days: countDays(parsed.state) }
+  const { restored, absentFromFile, writeFailed } = await restorePhotos(parsed.state, parsed.photos)
+  return {
+    ...parsed,
+    photosRestored: restored,
+    photosMissing: absentFromFile + writeFailed,
+    days: countDays(parsed.state),
+  }
 }
 
 export async function importBackup(file: File): Promise<AppState> {

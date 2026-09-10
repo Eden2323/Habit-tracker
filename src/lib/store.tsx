@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from 'react'
 import { msUntilMidnight, todayKey } from './date'
 import { emptyDay, newAttempt } from './defaults'
-import { loadState, saveState } from './storage'
+import { STORAGE_KEY, loadState, migrate, saveState } from './storage'
 import type { AppState, Attempt, DateKey, DayRecord, MacroEntry, MacroTargets, ReadingEntry, Settings, TaskDef, WorkoutEntry } from './types'
 
 export type Action =
@@ -158,14 +158,36 @@ export function StoreProvider({ children, initial }: { children: ReactNode; init
   const [today, setToday] = useState<DateKey>(() => todayKey())
   const [persisted, setPersisted] = useState(true)
   const firstRender = useRef(true)
+  // The serialised form of what this tab last wrote or adopted, so a `storage`
+  // event echoing our own write is ignored rather than bouncing between tabs.
+  const lastWritten = useRef<string | null>(null)
 
   useEffect(() => {
     if (firstRender.current) {
       firstRender.current = false
       return
     }
+    lastWritten.current = JSON.stringify(state)
     setPersisted(saveState(state))
   }, [state])
+
+  // Every write replaces the whole state under one key, so a second tab holding
+  // a stale snapshot would overwrite work done in the first. Adopt whatever
+  // another context wrote instead of writing blindly over it.
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== STORAGE_KEY || event.newValue === null) return
+      if (event.newValue === lastWritten.current) return
+      lastWritten.current = event.newValue
+      try {
+        dispatch({ type: 'replaceState', state: migrate(JSON.parse(event.newValue)) })
+      } catch {
+        // An unreadable foreign write is not worth acting on; keep what we have.
+      }
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
 
   // Roll over to the new day without needing a refresh. A timeout to the next
   // midnight is cheaper and more accurate than polling every minute, and the

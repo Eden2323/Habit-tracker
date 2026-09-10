@@ -4,6 +4,7 @@ import { useStore } from '../../lib/store'
 import type { DateKey } from '../../lib/types'
 import { Button } from '../ui'
 import './reading.css'
+import { useFlushOnHide } from '../../lib/useFlushOnHide'
 
 /** Long enough to swallow a burst of typing, short enough to feel live. */
 const COMMIT_DELAY = 400
@@ -40,6 +41,8 @@ export function NotesEditor({ date }: { date: DateKey }) {
     pending.current = null
     write?.()
   }, [])
+
+  useFlushOnHide(flush)
 
   // A sentence half-typed when the day changes — or when the view goes away —
   // still belongs to the day it was written on, and the queued write captured

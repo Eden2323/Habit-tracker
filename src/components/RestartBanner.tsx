@@ -125,7 +125,7 @@ export function RestartBanner() {
         <Modal open onClose={() => setConfirming(null)} title="Start over at Day 1?" labelledBy={`${uid}-rb-restart`}>
           <ul className="rb-confirm">
             <li>
-              <strong>Kept:</strong> this attempt is archived to Previous attempts — Day {missed} reached,{' '}
+              <strong>Kept:</strong> this attempt is archived to Previous attempts — Day {missed - 1} reached,{' '}
               {summarise(attempt, today).daysComplete} of {CHALLENGE_LENGTH} days complete. Every photo, note and number
               stays where it is.
             </li>

@@ -186,14 +186,32 @@ function safeStorage(): Storage | null {
   }
 }
 
+/**
+ * Set when the stored state could not be read and had to be replaced with a
+ * blank challenge. The raw bytes are kept under a side key so the user's
+ * records are not overwritten by the first thing they tap.
+ */
+export let loadFailure: { salvagedKey: string } | null = null
+
 export function loadState(): AppState {
   const store = safeStorage()
   if (!store) return initialState()
+  const raw = store.getItem(STORAGE_KEY)
+  if (!raw) return initialState()
   try {
-    const raw = store.getItem(STORAGE_KEY)
-    if (!raw) return initialState()
     return migrate(JSON.parse(raw))
   } catch {
+    // Unreadable JSON is the one case where starting fresh destroys data: the
+    // next write would clobber the only copy. Stash it first — a truncated
+    // value is often recoverable by hand.
+    const salvagedKey = `${STORAGE_KEY}:unreadable`
+    try {
+      store.setItem(salvagedKey, raw)
+      loadFailure = { salvagedKey }
+    } catch {
+      // No room to salvage it; nothing more we can do.
+      loadFailure = { salvagedKey }
+    }
     return initialState()
   }
 }

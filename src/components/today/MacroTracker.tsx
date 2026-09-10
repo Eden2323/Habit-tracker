@@ -3,6 +3,7 @@ import { getDay } from '../../lib/selectors'
 import { useStore } from '../../lib/store'
 import type { DateKey, MacroEntry, TaskDef } from '../../lib/types'
 import './macros.css'
+import { useFlushOnHide } from '../../lib/useFlushOnHide'
 
 type MacroKey = 'protein' | 'carbs' | 'fat' | 'calories'
 type GramKey = Exclude<MacroKey, 'calories'>
@@ -122,6 +123,7 @@ function useMacroCommit(date: DateKey) {
   // Collapsing the task unmounts the tracker mid-edit; the pending write must
   // still land.
   useEffect(() => flush, [flush])
+  useFlushOnHide(flush)
 
   return { queue, commit, flush }
 }

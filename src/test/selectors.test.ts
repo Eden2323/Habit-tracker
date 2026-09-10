@@ -364,7 +364,10 @@ describe('summarise', () => {
       dayNumber: 3,
       elapsed: 3,
       daysComplete: 2,
-      daysRemaining: CHALLENGE_LENGTH - 2,
+      // Calendar days left in the window, vs complete days still owed — day 3
+      // has begun but is unfinished, so the two differ by one.
+      daysRemaining: CHALLENGE_LENGTH - 3,
+      daysToEarn: CHALLENGE_LENGTH - 2,
       currentStreak: 2,
       longestStreak: 2,
       totalWaterMl: 4500,

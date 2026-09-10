@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useRef, useState, type ReactElement } from 'react'
 import { CHALLENGE_LENGTH, addDays, dayNumber, formatLong, formatShort } from './lib/date'
+import { pruneOrphans } from './lib/photos'
+import { photoIdsIn } from './lib/backup'
+import { loadFailure } from './lib/storage'
 import { useStore } from './lib/store'
 import type { DateKey } from './lib/types'
 import { ErrorBoundary } from './components/ErrorBoundary'
@@ -102,6 +105,20 @@ function AppShell() {
   const previousToday = useRef(today)
   const prevDayButton = useRef<HTMLButtonElement>(null)
 
+  // Blobs stranded by a failed delete or an old restore would sit in IndexedDB
+  // forever. Never sweep when the saved state could not be read: the state is
+  // empty then, so every photo on the device would look like an orphan.
+  useEffect(() => {
+    if (loadFailure) return
+    const ids = photoIdsIn(state)
+    const timer = setTimeout(() => {
+      void pruneOrphans(ids).catch(() => {})
+    }, 4000)
+    return () => clearTimeout(timer)
+    // Deliberately once per mount — this is housekeeping, not a subscription.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const theme = state.settings.theme
   useEffect(() => {
     const root = document.documentElement
@@ -203,6 +220,21 @@ function AppShell() {
           </p>
         </div>
       )}
+
+      {loadFailure ? (
+        <div className="sh-strip" role="status">
+          <p className="sh-strip__inner">
+            <span className="sh-strip__icon" aria-hidden="true">
+              ⚠
+            </span>
+            <span>
+              <span className="sh-strip__lead">Your saved challenge could not be read.</span> This app has started over
+              at Day 1, but the unreadable data was kept under{' '}
+              <code>{loadFailure.salvagedKey}</code> in this browser's storage rather than overwritten.
+            </span>
+          </p>
+        </div>
+      ) : null}
 
       <div className="sh-banners">
         <RestartBanner />

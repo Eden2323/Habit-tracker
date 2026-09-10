@@ -17,8 +17,8 @@ export function PhotoCapture({ date }: { date: DateKey }) {
   const { state, dispatch, today } = useStore()
   const toast = useToast()
   const [busy, setBusy] = useState(false)
-  // Ids are `photo_<date>`, so a replacement reuses the id and the loader would
-  // otherwise keep showing the old blob. Bumping this forces the re-read.
+  // A replacement reuses the same id, so the loader would otherwise keep
+  // showing the old blob. Bumping this forces the re-read.
   const [reload, setReload] = useState(0)
   const [confirming, setConfirming] = useState(false)
   const alive = useRef(true)
@@ -52,7 +52,7 @@ export function PhotoCapture({ date }: { date: DateKey }) {
 
     setBusy(true)
     try {
-      const savedId = await savePhotoForDay(date, file)
+      const savedId = await savePhotoForDay(state.current.id, date, file)
       if (!alive.current) return
       dispatch({ type: 'setPhoto', date, photoId: savedId })
       setReload((n) => n + 1)

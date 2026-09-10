@@ -192,7 +192,10 @@ export function taskConsistency(attempt: Attempt, today: DateKey = todayKey()): 
 export interface AttemptSummary {
   dayNumber: number
   daysComplete: number
+  /** Calendar days left in the 75-day window. */
   daysRemaining: number
+  /** Complete days still owed to finish the challenge. */
+  daysToEarn: number
   elapsed: number
   percentComplete: number
   currentStreak: number
@@ -209,25 +212,28 @@ export function summarise(attempt: Attempt, today: DateKey = todayKey()): Attemp
   const elapsed = Math.max(0, Math.min(rawDay, CHALLENGE_LENGTH))
 
   let daysComplete = 0
-  for (let day = 1; day <= elapsed; day += 1) {
-    if (isDayComplete(attempt, dateForDay(attempt.startDate, day))) daysComplete += 1
-  }
-
   let totalWaterMl = 0
   let totalPages = 0
   let totalWorkoutMinutes = 0
   let photoCount = 0
-  for (const day of Object.values(attempt.days)) {
-    totalWaterMl += day.water
-    totalPages += day.reading.pages
-    totalWorkoutMinutes += day.workout.minutes
-    if (day.photoId) photoCount += 1
+  // Totals are windowed to the attempt, like every other figure here. Correcting
+  // the start date moves the window without touching the stored days, so walking
+  // `attempt.days` directly would keep counting records that now fall outside it.
+  for (let day = 1; day <= elapsed; day += 1) {
+    const date = dateForDay(attempt.startDate, day)
+    if (isDayComplete(attempt, date)) daysComplete += 1
+    const record = getDay(attempt, date)
+    totalWaterMl += record.water
+    totalPages += record.reading.pages
+    totalWorkoutMinutes += record.workout.minutes
+    if (record.photoId) photoCount += 1
   }
 
   return {
     dayNumber: current,
     daysComplete,
-    daysRemaining: Math.max(0, CHALLENGE_LENGTH - daysComplete),
+    daysRemaining: Math.max(0, CHALLENGE_LENGTH - elapsed),
+    daysToEarn: Math.max(0, CHALLENGE_LENGTH - daysComplete),
     elapsed,
     percentComplete: (daysComplete / CHALLENGE_LENGTH) * 100,
     currentStreak: currentStreak(attempt, today),
@@ -247,9 +253,19 @@ export function isChallengeComplete(attempt: Attempt): boolean {
   return true
 }
 
-/** Dates that have a photo, oldest first. */
+/**
+ * Dates inside the attempt window that have a photo, oldest first.
+ *
+ * Records outside the window are skipped: their day number would come out as
+ * zero or negative, and that number is shown on the tile, in its alt text and
+ * in the compare slider.
+ */
 export function photoDays(attempt: Attempt): DayRecord[] {
   return Object.values(attempt.days)
-    .filter((d) => Boolean(d.photoId))
+    .filter((d) => {
+      if (!d.photoId) return false
+      const day = dayNumber(attempt.startDate, d.date)
+      return day >= 1 && day <= CHALLENGE_LENGTH
+    })
     .sort((a, b) => a.date.localeCompare(b.date))
 }

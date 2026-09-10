@@ -138,7 +138,11 @@ export default function DayView({ date }: { date: DateKey }) {
   const [celebrate, setCelebrate] = useState(false)
 
   const dayNum = dayNumber(attempt.startDate, date)
-  const outside = dayNum < 1 || dayNum > CHALLENGE_LENGTH
+  // A future day inside the window is still off limits: ticking tomorrow's
+  // boxes today would be scored as a complete day by the board. The header's
+  // next-day button already refuses this; the progress grid links here too.
+  const ahead = date > today
+  const outside = dayNum < 1 || dayNum > CHALLENGE_LENGTH || ahead
   const day = getDay(attempt, date)
   const statuses = dayStatuses(attempt, date)
   const total = statuses.length
@@ -163,12 +167,14 @@ export default function DayView({ date }: { date: DateKey }) {
         <p className="dv-outside__date">{formatLong(date)}</p>
         <Card>
           <EmptyState
-            icon="🗓️"
-            title="Outside this attempt"
+            icon={ahead ? '⏳' : '🗓️'}
+            title={ahead ? 'Not yet' : 'Outside this attempt'}
             body={
-              dayNum < 1
-                ? `This attempt began on ${formatLong(attempt.startDate)}, so there is nothing to track here.`
-                : `This attempt runs ${CHALLENGE_LENGTH} days and that would be day ${dayNum}.`
+              ahead
+                ? `Day ${dayNum} has not come round yet. You can only log the day you are actually living.`
+                : dayNum < 1
+                  ? `This attempt began on ${formatLong(attempt.startDate)}, so there is nothing to track here.`
+                  : `This attempt runs ${CHALLENGE_LENGTH} days and that would be day ${dayNum}.`
             }
           />
         </Card>

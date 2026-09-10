@@ -82,6 +82,7 @@ export function DayGrid({
               style={{ '--pg-fill': `${fill}%` } as CSSProperties}
               aria-label={cellLabel(cell)}
               aria-current={cell.isToday ? 'date' : undefined}
+              disabled={cell.state === 'future'}
               onClick={() => onSelectDate(cell.date)}
             >
               <span className="pg-cell__num tabular" aria-hidden="true">

@@ -50,7 +50,7 @@ const yFor = (value: number) => PAD.top + (1 - value / CHALLENGE_LENGTH) * PLOT_
 
 const Y_TICKS = [0, 25, 50, CHALLENGE_LENGTH]
 
-export function CompletionCurve({ points }: { points: DayPoint[] }) {
+export function CompletionCurve({ points, today }: { points: DayPoint[]; today: DateKey }) {
   const uid = useId().replace(/:/g, '')
   const titleId = `pg-curve-title-${uid}`
   const descId = `pg-curve-desc-${uid}`
@@ -68,7 +68,11 @@ export function CompletionCurve({ points }: { points: DayPoint[] }) {
   }
 
   const complete = last.value
-  const behind = points.length - complete
+  // Only days that are over can be behind pace. Counting an unfinished today as
+  // a shortfall would tell a flawless run it is a day down every morning — the
+  // same reason `currentStreak` refuses to break on an in-progress today.
+  const settled = points.filter((p) => p.date < today).length
+  const behind = Math.max(0, settled - complete)
   const pace = behind === 0 ? 'exactly on pace' : `${plural(behind, 'day')} behind pace`
 
   const line = curve

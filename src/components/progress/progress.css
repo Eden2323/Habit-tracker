@@ -99,6 +99,16 @@
   color: var(--text-muted);
 }
 
+/* Future days are not navigable — you can only log the day you are living. */
+.pg-cell:disabled {
+  cursor: default;
+  opacity: 0.75;
+}
+
+.pg-cell:disabled:active {
+  transform: none;
+}
+
 .pg-cell--now::after {
   content: '';
   position: absolute;

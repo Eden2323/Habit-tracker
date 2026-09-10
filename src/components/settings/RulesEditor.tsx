@@ -4,6 +4,7 @@ import { useStore } from '../../lib/store'
 import type { TaskDef, TaskKind } from '../../lib/types'
 import { Button, Card, Field } from '../ui'
 import './settings.css'
+import { useFlushOnHide } from '../../lib/useFlushOnHide'
 
 /** Long enough to swallow a burst of typing, short enough to feel live. */
 const COMMIT_DELAY = 350
@@ -103,6 +104,7 @@ export function RulesEditor() {
 
   // Navigating away mid-edit must still land the pending write.
   useEffect(() => flush, [flush])
+  useFlushOnHide(flush)
 
   const enabledCount = tasks.filter((t) => t.enabled).length
 

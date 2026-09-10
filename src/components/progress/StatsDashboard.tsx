@@ -40,6 +40,7 @@ export function StatsDashboard({ attempt, today }: { attempt: Attempt; today: Da
     { label: 'Longest streak', value: fmt(stats.longestStreak), unit: stats.longestStreak === 1 ? 'day' : 'days' },
     { label: 'Days complete', value: fmt(stats.daysComplete), unit: `of ${CHALLENGE_LENGTH}` },
     { label: 'Days to go', value: fmt(stats.daysRemaining) },
+    { label: 'Still to earn', value: fmt(stats.daysToEarn), unit: stats.daysToEarn === 1 ? 'day' : 'days' },
     { label: 'Completion', value: `${percent}`, unit: '%' },
     { label: 'Water drunk', value: formatLitres(stats.totalWaterMl), unit: 'L' },
     { label: 'Pages read', value: fmt(stats.totalPages) },
@@ -66,7 +67,7 @@ export function StatsDashboard({ attempt, today }: { attempt: Attempt; today: Da
               Day {stats.dayNumber} of {CHALLENGE_LENGTH}
             </p>
             <p className="pg-hero__line tabular" aria-live="polite">
-              {stats.daysComplete} days banked · {stats.daysRemaining} still to earn
+              {stats.daysComplete} days banked · {stats.daysToEarn} still to earn
             </p>
           </div>
         </div>
@@ -120,7 +121,7 @@ export function StatsDashboard({ attempt, today }: { attempt: Attempt; today: Da
       </Card>
 
       <Card title="Pace">
-        <CompletionCurve points={points} />
+        <CompletionCurve points={points} today={today} />
       </Card>
 
       <Card title="Daily volume">
