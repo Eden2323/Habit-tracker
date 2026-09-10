@@ -15,7 +15,9 @@ import { blobToDataUrl, dataUrlToBlob, deletePhoto, getPhoto, listPhotoIds, prun
  * behind `Response` is the spec-complete one a browser would hand IndexedDB, so
  * the storage tests run against that instead.
  */
-const PlatformBlob = (await new Response('').blob()).constructor as unknown as typeof Blob
+import { Blob as NodeBlob } from 'node:buffer'
+
+const PlatformBlob = NodeBlob as unknown as typeof Blob
 
 describe('the photo store', () => {
   const jpeg = (text: string) => new PlatformBlob([text], { type: 'image/jpeg' })
