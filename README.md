@@ -126,9 +126,14 @@ Every push to `main` runs `.github/workflows/deploy.yml`, which installs, runs
 the tests, builds, copies `index.html` to `404.html` as an SPA fallback, and
 publishes `dist/` to GitHub Pages. A failing test fails the deploy.
 
-**One-time setup, which cannot be done from code:** in the repository's
-**Settings → Pages**, set **Source** to **GitHub Actions**. Until that is done
-the workflow will build and then fail at the deploy step.
+The workflow passes `enablement: true` to `actions/configure-pages`, so the
+first run creates the Pages site itself — there is no setting to flip by hand.
+
+If a run ever fails at **Configure Pages** with `Get Pages site failed … Not
+Found`, Pages is off and the token could not turn it on. Enable it manually at
+**the repository's** Settings → Pages (github.com/&lt;owner&gt;/&lt;repo&gt;/settings/pages
+— not your account settings, which have no Pages entry), set **Source** to
+**GitHub Actions**, then re-run the failed workflow from the Actions tab.
 
 The site is served from a subpath, so `vite.config.ts` sets `base` to
 `/Habit-tracker/`. If the repo is ever renamed or moved to a custom domain,

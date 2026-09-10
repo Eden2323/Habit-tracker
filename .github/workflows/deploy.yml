@@ -27,7 +27,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
@@ -44,8 +44,13 @@ jobs:
       - name: Add SPA fallback
         run: cp dist/index.html dist/404.html
 
+      # `enablement` creates the Pages site on the first run if it does not
+      # exist yet, so a fresh clone of this repo deploys without anyone having
+      # to visit Settings first. It is a no-op once Pages is on.
       - name: Configure Pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
