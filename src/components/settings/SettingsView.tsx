@@ -7,6 +7,7 @@ import { Button, Card, Field, Modal, Segmented, useToast } from '../ui'
 import { AttemptHistory } from './AttemptHistory'
 import { DataManager } from './DataManager'
 import { RulesEditor } from './RulesEditor'
+import { clearGeminiApiKey, getGeminiApiKey, setGeminiApiKey } from '../../lib/aiFoodVision'
 import './settings.css'
 
 /** Long enough to swallow a burst of typing, short enough to feel live. */
@@ -49,6 +50,25 @@ export default function SettingsView() {
   const attempt = state.current
   const settings = state.settings
   const targets = attempt.macroTargets
+
+  const [aiKey, setAiKey] = useState<string | null>(() => getGeminiApiKey())
+  const [aiKeyDraft, setAiKeyDraft] = useState<string>('')
+
+  function saveAiKey() {
+    const key = aiKeyDraft.trim()
+    if (!key) return
+    setGeminiApiKey(key)
+    setAiKey(key)
+    setAiKeyDraft('')
+    toast('Gemini API key saved')
+  }
+
+  function removeAiKey() {
+    clearGeminiApiKey()
+    setAiKey(null)
+    setAiKeyDraft('')
+    toast('Gemini API key removed')
+  }
 
   // --- Macro targets -------------------------------------------------------
 
@@ -220,6 +240,52 @@ export default function SettingsView() {
         ) : null}
 
         <p className="st-hint">A target of 0 turns that number off in the day&rsquo;s macro tracker.</p>
+      </Card>
+
+      <Card title="AI Meal Scanner">
+        <Field
+          label="Gemini Vision API Key"
+          id={`st-gemini-${uid}`}
+          hint="Powers photo meal analysis. Stored locally in your browser and connects directly to Google Gemini."
+        >
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <input
+              id={`st-gemini-${uid}`}
+              className="field__input"
+              type="password"
+              placeholder={aiKey ? '••••••••••••••••••••' : 'Paste your API key'}
+              value={aiKeyDraft}
+              onChange={(e) => setAiKeyDraft(e.target.value)}
+            />
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={saveAiKey}
+              disabled={!aiKeyDraft.trim() || aiKeyDraft.trim() === aiKey}
+            >
+              Save
+            </Button>
+            {aiKey ? (
+              <Button variant="ghost" size="sm" onClick={removeAiKey}>
+                Clear
+              </Button>
+            ) : null}
+          </div>
+        </Field>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'var(--space-2)', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+          <span style={{ fontSize: '0.85rem', color: aiKey ? 'var(--success)' : 'var(--text-muted)' }}>
+            {aiKey ? '✓ Key configured' : 'No key set'}
+          </span>
+          <a
+            href="https://aistudio.google.com/app/apikey"
+            target="_blank"
+            rel="noreferrer"
+            style={{ fontSize: '0.85rem', color: 'var(--accent)', textDecoration: 'none', fontWeight: 500 }}
+          >
+            Get a free key at Google AI Studio &rarr;
+          </a>
+        </div>
       </Card>
 
       <Card title="Water">

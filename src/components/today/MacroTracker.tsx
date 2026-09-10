@@ -2,6 +2,8 @@ import { useCallback, useEffect, useId, useRef, useState, type CSSProperties } f
 import { getDay } from '../../lib/selectors'
 import { useStore } from '../../lib/store'
 import type { DateKey, MacroEntry, TaskDef } from '../../lib/types'
+import { MealScannerModal } from './MealScannerModal'
+import type { MealTotals } from '../../lib/aiFoodVision'
 import './macros.css'
 import { useFlushOnHide } from '../../lib/useFlushOnHide'
 
@@ -149,11 +151,43 @@ export function MacroTracker({ date, task }: { date: DateKey; task: TaskDef }) {
     setDraft(draftFrom(entry))
   }
 
+  const [scannerOpen, setScannerOpen] = useState(false)
+
   const values: Record<MacroKey, number> = {
     protein: parseValue(draft.protein, SPEC.protein.max),
     carbs: parseValue(draft.carbs, SPEC.carbs.max),
     fat: parseValue(draft.fat, SPEC.fat.max),
     calories: parseValue(draft.calories, SPEC.calories.max),
+  }
+
+  function handleApplyMeal(totals: MealTotals, mode: 'add' | 'replace') {
+    if (mode === 'add') {
+      const p = Math.max(0, Math.round((values.protein + totals.protein) * 10) / 10)
+      const c = Math.max(0, Math.round((values.carbs + totals.carbs) * 10) / 10)
+      const f = Math.max(0, Math.round((values.fat + totals.fat) * 10) / 10)
+      const cal = Math.max(0, Math.round(values.calories + totals.calories))
+      setDraft({
+        protein: String(p),
+        carbs: String(c),
+        fat: String(f),
+        calories: String(cal),
+      })
+      commit({ protein: p, carbs: c, fat: f, calories: cal, logged: true })
+    } else {
+      setDraft({
+        protein: String(totals.protein),
+        carbs: String(totals.carbs),
+        fat: String(totals.fat),
+        calories: String(totals.calories),
+      })
+      commit({
+        protein: totals.protein,
+        carbs: totals.carbs,
+        fat: totals.fat,
+        calories: totals.calories,
+        logged: true,
+      })
+    }
   }
 
   const kcalParts = SPLIT.map((key) => values[key] * KCAL_PER_GRAM[key])
@@ -194,6 +228,33 @@ export function MacroTracker({ date, task }: { date: DateKey; task: TaskDef }) {
 
   return (
     <div className="mc">
+      <div className="mc-ai-bar">
+        <button
+          type="button"
+          className="mc-ai-btn"
+          onClick={() => setScannerOpen(true)}
+          aria-label="Scan meal photo with AI to estimate ingredients and macros"
+        >
+          <span className="mc-ai-btn__icon" aria-hidden="true">
+            📸
+          </span>
+          <span className="mc-ai-btn__content">
+            <span className="mc-ai-btn__title">Estimate from meal photo</span>
+            <span className="mc-ai-btn__sub">AI ingredient detection & portion weights with human review</span>
+          </span>
+          <span className="mc-ai-btn__arrow" aria-hidden="true">
+            &rarr;
+          </span>
+        </button>
+      </div>
+
+      <MealScannerModal
+        open={scannerOpen}
+        onClose={() => setScannerOpen(false)}
+        onApply={handleApplyMeal}
+        currentMacros={values}
+      />
+
       <div className="mc-summary" aria-live="polite">
         <div className="mc-ring">
           <svg

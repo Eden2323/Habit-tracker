@@ -369,7 +369,76 @@
 
 @media (prefers-reduced-motion: reduce) {
   .mc-log:active,
-  .mc-suggest:active {
+  .mc-suggest:active,
+  .mc-ai-btn:hover,
+  .mc-ai-btn:active {
     transform: none;
   }
 }
+
+/* --- AI Meal Scan Trigger ------------------------------------------------ */
+
+.mc-ai-bar {
+  margin-bottom: var(--space-1);
+}
+
+.mc-ai-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mc-ai-btn:hover {
+  border-color: var(--accent);
+  background: var(--surface-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}
+
+.mc-ai-btn:active {
+  transform: translateY(0);
+}
+
+.mc-ai-btn__icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.mc-ai-btn__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mc-ai-btn__title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.mc-ai-btn__sub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.mc-ai-btn__arrow {
+  color: var(--accent);
+  font-size: 1.1rem;
+  font-weight: 700;
+  transition: transform 0.2s;
+}
+
+.mc-ai-btn:hover .mc-ai-btn__arrow {
+  transform: translateX(3px);
+}
+
