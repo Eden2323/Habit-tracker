@@ -7,6 +7,9 @@
     "PreCompact": [
       { "hooks": [ { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/precompact.sh\"", "timeout": 10 } ] }
     ],
+    "Stop": [
+      { "hooks": [ { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-end-hours.sh\"", "timeout": 20 } ] }
+    ],
     "SessionEnd": [
       { "hooks": [ { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-end-hours.sh\"", "timeout": 20 } ] }
     ]

@@ -1,11 +1,16 @@
 #!/bin/bash
-# SessionEnd: append one draft row to agent/HOURS.md describing this session's active time.
+# SessionEnd and Stop: write this session's draft row(s) to agent/HOURS.md describing its active time.
+# Runs at every Stop as well as at SessionEnd so the row already sits in the working tree when the
+# session commits (a cloud sandbox is thrown away, so a row written only at SessionEnd would be lost).
+# Rows are keyed by session id and replaced on each run. Works without jq.
 # Active time = sum of gaps between consecutive transcript events that are under 15 minutes.
 # Times are recorded in Australia/Brisbane regardless of where the session ran. Always exits 0.
 payload=$(cat 2>/dev/null)
-cwd=$(printf '%s' "$payload" | jq -r '.cwd // empty' 2>/dev/null); [ -z "$cwd" ] && cwd="$PWD"
-transcript=$(printf '%s' "$payload" | jq -r '.transcript_path // empty' 2>/dev/null)
-sid=$(printf '%s' "$payload" | jq -r '.session_id // empty' 2>/dev/null)
+jget() { if command -v jq >/dev/null 2>&1; then printf '%s' "$payload" | jq -r ".$1 // empty" 2>/dev/null
+         else printf '%s' "$payload" | python3 -c 'import sys,json;print((json.load(sys.stdin).get(sys.argv[1]) or ""))' "$1" 2>/dev/null; fi; }
+cwd=$(jget cwd); [ -z "$cwd" ] && cwd="${CLAUDE_PROJECT_DIR:-$PWD}"
+transcript=$(jget transcript_path)
+sid=$(jget session_id)
 root=$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null) || exit 0
 ledger="$root/agent/HOURS.md"
 [ -f "$ledger" ] || exit 0
@@ -14,9 +19,13 @@ command -v python3 >/dev/null 2>&1 || exit 0
 branch=$(git -C "$root" rev-parse --abbrev-ref HEAD 2>/dev/null)
 python3 - "$transcript" "$ledger" "${sid:-unknown}" "${branch:-?}" <<'PY' 2>/dev/null
 import sys, json, datetime, re
-from zoneinfo import ZoneInfo
 transcript, ledger, sid, branch = sys.argv[1:5]
-TZ = ZoneInfo("Australia/Brisbane"); GAP = 15*60
+try:
+    from zoneinfo import ZoneInfo
+    TZ = ZoneInfo("Australia/Brisbane")
+except Exception:  # no tz database on this image; Brisbane is UTC+10 all year
+    TZ = datetime.timezone(datetime.timedelta(hours=10))
+GAP = 15*60
 ts = []
 for line in open(transcript, errors="ignore"):
     if '"timestamp"' not in line: continue

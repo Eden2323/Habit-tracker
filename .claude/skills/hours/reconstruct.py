@@ -18,9 +18,12 @@ import json
 import os
 import re
 import subprocess
-from zoneinfo import ZoneInfo
+try:
+    from zoneinfo import ZoneInfo
 
-TZ = ZoneInfo("Australia/Brisbane")
+    TZ = ZoneInfo("Australia/Brisbane")
+except Exception:  # no tz database on this image; Brisbane is UTC+10 all year
+    TZ = dt.timezone(dt.timedelta(hours=10))
 
 
 def week_bounds(iso):
