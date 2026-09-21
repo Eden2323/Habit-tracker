@@ -1,31 +1,17 @@
-# HANDOFF — deep context
-
-Durable understanding of this codebase. Slow-changing. `STATUS.md` is the digest
-that points here; this is where the detail lives so it never has to sit in a
-context window.
+# HANDOFF — 75 Hard tracker
 
 ## System shape
-
-<Modules / services and what each owns.>
-
-## Data flow
-
-<Request or data path, end to end. Where state lives.>
+Single-page React app. State is the day log in browser storage; there is no server component. The Gemini vision call goes straight from the browser to Google's API with a key the user enters in the app.
 
 ## Why it's built this way
-
-<Constraints that explain otherwise-surprising choices. The things a new agent
-would "fix" and break.>
+The point is zero friction and zero accounts: the phone is the only device that matters, and the log never leaves it. That rules out sync, analytics and any backend.
 
 ## Invariants
-
-<Things that must stay true. How they're enforced, if they are.>
+- No network dependency for the core loop; the app must work offline as an installed PWA.
+- The challenge restarts at day 1 on any missed rule; do not add "forgiveness" without a decision entry.
 
 ## Known debt
-
-<What's knowingly wrong, and why it was acceptable.>
+- The Gemini model id retires periodically; runtime discovery mitigates it but the feature still breaks if Google changes the API surface.
 
 ## External dependencies
-
-<Third-party services, what happens when each is down, where credentials live
-(by name, never by value).>
+- GitHub Pages (deploy on push to `main`), Google Gemini API (user-supplied key).

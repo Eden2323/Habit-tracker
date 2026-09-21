@@ -8,9 +8,4 @@ raise it with the human; do not silently reverse it.
 
 ---
 
-## <YYYY-MM-DD> — <decision in one line>
-
-**Context:** <what forced the choice>
-**Decision:** <what we're doing>
-**Rejected:** <alternatives, and why each lost>
-**Touches:** `<path>`, `<path>`
+_No entries yet._
