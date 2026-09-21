@@ -1,0 +1,5 @@
+# Synced tooling from aianswers-workflow. Nearest-config rule: this file governs .claude/** and keeps a
+# repo's stricter rule set from failing CI on scripts it does not own. The default rules still apply.
+line-length = 100
+[lint]
+select = ["E", "F", "W", "I"]
